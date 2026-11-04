@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+alembic>=1.13
+SQLAlchemy>=2.0
+psycopg[binary]>=3.1
+python-dotenv
+SQLAlchemy[asyncio]>=2.0
