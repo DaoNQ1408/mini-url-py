@@ -8,18 +8,26 @@ services:
     ports: ["5432:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shortener"]
+      test: ["CMD-SHELL", "pg_isready -U shortener -d shortener"]
       interval: 5s
       retries: 10
+
+  migrate:
+    build: .
+    command: alembic upgrade head
+    environment:
+      DATABASE_URL: postgresql+psycopg://shortener:shortener@db:5432/shortener
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
 
   api:
     build: .
     environment:
       DATABASE_URL: postgresql+psycopg://shortener:shortener@db:5432/shortener
-    depends_on:
-      db: { condition: service_healthy }
-    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports: ["8000:8000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
 
 volumes:
   pgdata:
